@@ -24,10 +24,8 @@ library
   exposed-modules:     Katip.Scribes.Syslog
   build-depends:       base
                      , katip >= 0.3.1.5
-                     , hsyslog >= 4
+                     , hsyslog >= 5
                      , text
-                     , string-conv
-                     , aeson
                      , bytestring
   ghc-options:         -Wall
   default-language:    Haskell2010
