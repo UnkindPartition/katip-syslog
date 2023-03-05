@@ -15,6 +15,8 @@ import qualified Data.Text.Encoding as T
 import qualified Data.Text.Lazy.Encoding as LT
 import qualified Data.Text.Lazy.Builder as LTB
 import           Katip
+import           Katip.Core
+import           Katip.Scribes.Handle (brackets, getKeys)
 import           System.Posix.Syslog
 import           Foreign.C.Types
 import           Foreign.ForeignPtr
@@ -55,9 +57,23 @@ toCString bs = BSU.unsafeUseAsCStringLen bs $ \(ptr0, len) -> do
   return fptr
 
 formatItem :: LogItem a => Verbosity -> Item a -> BS.ByteString
-formatItem verb = LBS.toStrict . LT.encodeUtf8 . LTB.toLazyText . bracketFormat
+formatItem verb = LBS.toStrict . LT.encodeUtf8 . LTB.toLazyText . syslogFormat
   {- colorize? -} False
   {- verbosity -} verb
+
+-- | A bracket-like formatter that makes sense for syslog. E.g. the PID and a
+-- timestamp will already be included, no need to add those.
+syslogFormat :: LogItem a => ItemFormatter a
+syslogFormat _withColor verb Item {..} =
+    brackets (mconcat $ map LTB.fromText $ intercalateNs _itemNamespace)
+    <> brackets (LTB.fromText (renderSeverity _itemSeverity))
+    <> brackets ("ThreadId " <> LTB.fromText (getThreadIdText _itemThread))
+    <> mconcat ks
+    <> maybe mempty (brackets . LTB.fromString . locationToString) _itemLoc
+    <> LTB.fromText " "
+    <> (unLogStr _itemMessage)
+  where
+    ks = map brackets $ getKeys verb _itemPayload
 
 --------------------------------------------------------------------------------
 toSyslogPriority :: Severity -> Priority
