@@ -30,14 +30,14 @@ library
   ghc-options:         -Wall
   default-language:    Haskell2010
 
-test-suite katip-syslog-test
-  type:                exitcode-stdio-1.0
+executable katip-syslog-test
   hs-source-dirs:      test
-  main-is:             Spec.hs
+  main-is:             Main.hs
   build-depends:       base
+                     , katip
                      , katip-syslog
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
+  default-extensions:  OverloadedStrings
 
 source-repository head
   type:     git
